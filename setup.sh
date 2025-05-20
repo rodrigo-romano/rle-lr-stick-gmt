@@ -1,0 +1,14 @@
+#
+# Choose the structural model for the simulation
+# export FEM_REPO=$HOME/mnt/20250313_0917_zen_30_M1_202110_FSM_202305_Mount_202305_pier_202411_heavy_SIIDOM_movingGround
+# export FEM_REPO=/home/rromano/Workspace/gmt-data/20250306_2131_zen_30_M1_202110_FSM_202305_Mount_202305_pier_202411_heavy_SIReq_movingGround_lockedDrives
+# export FEM_REPO=/home/rromano/Workspace/gmt-data/20250306_2132_zen_30_M1_202110_FSM_202305_Mount_202305_pier_202411_heavy_SIIDOM_movingGround_lockedDrives
+export FEM_REPO=/home/rromano/Workspace/gmt-data/20250331_0753_pier_ODC_202411_stickTelescope_SIIDOM_HBS_largeMass
+# export FEM_REPO=/home/rromano/Workspace/gmt-data/20250331_0825_pier_ODC_202411_stickTelescope_SIIDOM_EDS_largeMass
+# export FEM_REPO=/home/rromano/Workspace/gmt-data/20250408_1231_pier_ODC_202411_stickTelescope_SIReq_HBS_largeMass
+# export FEM_REPO=/home/rromano/Workspace/gmt-data/20250408_1230_pier_ODC_202411_stickTelescope_SIReq_EDS_largeMass
+
+export FLOWCHART=dot
+
+# MOUNT_MODEL is required to keep compatibility with the unlocked_mount binary
+export MOUNT_MODEL=MOUNT_FDR_1kHz

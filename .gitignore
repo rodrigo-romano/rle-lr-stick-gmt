@@ -1,0 +1,6 @@
+# Rust data and compilation files
+/target
+/data/*.parquet
+
+# Matlab files
+/data/*.mat
