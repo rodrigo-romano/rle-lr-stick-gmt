@@ -33,18 +33,23 @@ srs.fmin = 1; %  minimum frequency [Hz]
 % s3_path = "/home/rromano/mnt";
 
 model_set = ["20250331_0753";...
+    "20250331_0753_ZOH";...
+    "20250331_0753_FOH";...
     "20250331_0825";...
     "20250519_1258"];
 
 mset_info = [...
     "Stick_Tel/HBS config - IDOM SIS Lat stiffness";...
+    "Stick_Tel/HBS config - ZOH";...
+    "Stick_Tel/HBS config - FOH";...
     "Stick_Tel/EDS config - IDOM SIS Lat stiffness";...
     "Stick_Tel/IDOM config - IDOM SIS Lat stiffness"];
 
-mset_info_red = ["StickHBS-IDOM";"StickEDS-IDOM";"StickIDOM"];
+mset_info_red = ["StickHBS-IDOM";"StickHBS-ZOH";"StickHBS-FOH";...
+    "StickEDS-IDOM";"StickIDOM"];
 
 
-sel_model_idx = 1:3;
+sel_model_idx = [1,2,3,5];
 model_set = model_set(sel_model_idx);
 mset_info = mset_info(sel_model_idx);
 mset_info_red = mset_info_red(sel_model_idx);
@@ -57,9 +62,18 @@ pier_sa_dt = cell(numel(model_set),1);
 dt_file_label = cell(numel(model_set),1);
 
 for i_ = 1:numel(model_set)
-    dtfile_str = ['/Users/rromano/Workspace/gmt-im-studies/',...
-        'seismic_pproc/rle_stickGMT/rle%02d_%s_stickGMT_rayZ_sim_dt'];
-    dt_file = sprintf(dtfile_str,rle_id,model_set{i_});
+    if(endsWith(model_set(i_),'ZOH'))
+        dtfile_str = ['/Users/rromano/Workspace/gmt-im-studies/',...
+            'seismic_pproc/rle_stickGMT/rle%02d_%s_stickGMT_rayZ_ZOH_sim_dt'];
+    elseif(endsWith(model_set(i_),'FOH'))
+        dtfile_str = ['/Users/rromano/Workspace/gmt-im-studies/',...
+            'seismic_pproc/rle_stickGMT/rle%02d_%s_stickGMT_rayZ_FOH_sim_dt'];
+    else
+        dtfile_str = ['/Users/rromano/Workspace/gmt-im-studies/',...
+            'seismic_pproc/rle_stickGMT/rle%02d_%s_stickGMT_rayZ_sim_dt'];
+    end
+    
+    dt_file = sprintf(dtfile_str,rle_id,model_set{i_}(1:13));
     fprintf("Post-processing (%s) data from \n%s\n",mset_info_red(i_),dt_file);
     if(i_ == 1)
         [pier_acc_dt{i_}, time, gnd_acc] = load_pier_acc(dt_file);
@@ -67,8 +81,10 @@ for i_ = 1:numel(model_set)
         fSRS = get_SRS_fSRS(srs.zeta, srs.steps, srs.fmin, Ts);
     else        
         [pier_acc_dt{i_}, time_] = load_pier_acc(dt_file);
-        assert(length(time)==length(time_),...
-            'Incompatible data length for model %d',i_);
+        if(length(time) ~= length(time_))
+            warning("First case has %d samples, while case %d has %d!\n",...
+                length(time), i_, length(time_));
+        end
     end
     label_struct = replace(...
         extractBetween(dt_file,sprintf("rle%02d_",rle_id),"_stickGMT_rayZ"),...
@@ -179,10 +195,10 @@ end
 
 ylabel_str = ["H1","H2","V"];
 lw_vec = [1.2, 1.2, 1.4, 1.4, 1, 1];
-ltype_vec = ['-', '--', '-', '--', '-', '--'];
+ltype_vec = ["-", "--", ":", "--", "-", "--"];
 
 % Spectral Acceleration Plot  
-fig1 = figure(20000-rle_id);
+fig1 = figure(2000-rle_id);
 set(gcf,'position',[423   350   740   400])
 for ik = 1:3    
     subplot(3,1,ik)
@@ -195,7 +211,7 @@ for ik = 1:3
     end
     plot(fSRS, 9.80665*idom_sa_data(:,ik),'-','LineWidth',1.4);
     plot(pier_acc_cteZ.fSRS, pier_acc_cteZ.acc(:,ik),'--','LineWidth',1.2);
-    xlim([0, 60])
+    xlim([0, 40])
     grid on; ylabel(ylabel_str{ik}+" (m/s^2)"); hold off;
 end
 xlabel("Frequency (Hz)")
@@ -207,7 +223,7 @@ legend([mset_info_red(:); "IDOM 1R1 Acc"; "HBS-IDOM(fixed zeta=0.02)"],'NumColum
 
 
 % Acc PSD Plot
-fig2 = figure(30000-rle_id);
+fig2 = figure(3000-rle_id);
 set(gcf,'position',[423   150   740   400])
 ylabel_str = ["H1 PSD","H2 PSD","V PSD"];
 for ik = 1:3    

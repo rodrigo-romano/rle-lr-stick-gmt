@@ -20,7 +20,7 @@ save_res = true;
 % Set telescope structural dynamics damping
 rayleigh_z = true;
 if ~rayleigh_z
-    sysDamp = 0.02; %#ok<NASGU>
+    sysDamp = 0.02; 
 end
 
 % Set structural dynamics model sampling period
@@ -40,9 +40,9 @@ osim.dc_mm_comp = 0;    % [bool] DC mismatch compensation
 
 
 % ModelFolder = "20241125_0627_pier_ODC_202411_stickTelescope_largeMass";
-% ModelFolder = "20250331_0753_pier_ODC_202411_stickTelescope_SIIDOM_HBS_largeMass";
+ModelFolder = "20250331_0753_pier_ODC_202411_stickTelescope_SIIDOM_HBS_largeMass";
 % ModelFolder = "20250331_0825_pier_ODC_202411_stickTelescope_SIIDOM_EDS_largeMass";
-ModelFolder = "20250519_1258_pier_ODC_202411_stickTelescope_IDOM_verification";
+% ModelFolder = "20250519_1258_pier_ODC_202411_stickTelescope_IDOM_verification";
 FileName = "modal_state_space_model_2ndOrder.mat";
     
 if(~exist('inputTable','var') || 1)
@@ -126,8 +126,9 @@ if rayleigh_z
     alpha_z = 0.1555;
     beta_z = 6.303e-4;
     sysDamp = (alpha_z/2)./sqrt(om2) + 0.5*(beta_z)*sqrt(om2);
+    sysDamp(1:3) = sysDamp(4);
     fprintf('** Structural model damping set according to Rayleigh curve.\n');
-    if true
+    if false
         figure(222);
         semilogx(2*pi./sqrt(om2),sysDamp,'.'); hold on;
         om_ = 2*pi*linspace(1/10,1/0.01,1001);
@@ -223,12 +224,22 @@ end
 %%
 
 if(run_all_rle)
-    rle_path_str = '/Users/rromano/Workspace/grsim/rle_acc/data/RLE0%d_1kHz_dt.mat';
-    for i_rle = 1:7
-        load(sprintf(rle_path_str,i_rle),sprintf('RLE0%d_1kHz_dt',i_rle));
-        eval(sprintf("RLE_1kHz_dt = RLE0%d_1kHz_dt;",i_rle));
-        sssha_acc_dt.time = 1e-3*(0:length(RLE_1kHz_dt)-1)';
-        sssha_acc_dt.signals.values = [RLE_1kHz_dt(:,1), RLE_1kHz_dt(:,2), RLE_1kHz_dt(:,3)];
+    rle_Hz = [200, 100, 200, 80, 100, 100, 100];
+    
+%     rle_path_str = '/Users/rromano/Workspace/grsim/rle_acc/data/RLE0%d_1kHz_dt.mat';
+    for i_rle = 1:1%7
+        rle_path_str = sprintf(...
+            '/Users/rromano/Workspace/grsim/rle_acc/data/RLE_2018_%d_%dHz.mat',...
+            i_rle, rle_Hz(i_rle));
+        % For upsampled RLE dataset
+%         load(sprintf(rle_path_str,i_rle),sprintf('RLE0%d_1kHz_dt',i_rle));
+%         eval(sprintf("RLE_dt = RLE0%d_1kHz_dt;",i_rle));
+%         sssha_acc_dt.time = 1e-3*(0:length(RLE_dt)-1)';
+        % For RLE dataset with original sample
+        load(sprintf(rle_path_str,i_rle,rle_Hz(i_rle)),'acc_dt','time');
+        eval("RLE_dt = acc_dt;");
+        sssha_acc_dt.time = time;
+        sssha_acc_dt.signals.values = [RLE_dt(:,1), RLE_dt(:,2), RLE_dt(:,3)];
         sssha_acc_dt.signals.dimensions = 3;
     
         % Run RLE simulation
@@ -237,7 +248,7 @@ if(run_all_rle)
         
         if(save_res)
             % Save simulation data
-            if(rayleigh_z), fname_str  = "rle0%d_%s_stickGMT_rayZ_sim_dt";
+            if(rayleigh_z), fname_str  = "rle0%d_%s_stickGMT_rayZ_FOH_sim_dt";
             else, fname_str  = "rle0%d_%s_stickGMT_sim_dt";
             end
             fname = sprintf(fname_str,i_rle, extractBefore(ModelFolder,14));
